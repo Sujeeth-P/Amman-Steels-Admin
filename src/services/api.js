@@ -91,6 +91,15 @@ export const reportsAPI = {
     getAnalytics: () => api.get('/reports/analytics')
 }
 
+// Quotations API
+export const quotationsAPI = {
+    getAll: (params) => api.get('/enquiries', { params }),
+    getById: (id) => api.get(`/enquiries/${id}`),
+    update: (id, data) => api.put(`/enquiries/${id}`, data),
+    delete: (id) => api.delete(`/enquiries/${id}`),
+    getStats: () => api.get('/enquiries/stats')
+}
+
 // Create a separate axios instance for file uploads (multipart/form-data)
 const uploadApi = axios.create({
     baseURL: '/api',

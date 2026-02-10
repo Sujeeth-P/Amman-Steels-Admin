@@ -18,6 +18,7 @@ import AdminDashboard from './views/admin/DashboardView'
 import ProductsView from './views/admin/ProductsView'
 import StockView from './views/admin/StockView'
 import SalesView from './views/admin/SalesView'
+import QuotationsView from './views/admin/QuotationsView'
 
 // Staff Views
 import BillingView from './views/staff/BillingView'
@@ -121,6 +122,7 @@ function App() {
           <AdminLayout />
         </ProtectedRoute>
       }>
+        <Route path="quotations" element={<QuotationsView />} />
         <Route path="billing" element={<BillingView />} />
         <Route path="orders" element={<OrdersView />} />
       </Route>

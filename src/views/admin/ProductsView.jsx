@@ -18,7 +18,7 @@ const ProductsView = () => {
     const [uploadingImage, setUploadingImage] = useState(false)
     const [uploadProgress, setUploadProgress] = useState('')
 
-    const categories = ['steel', 'cement', 'electronics', 'paints']
+    const categories = ['steel', 'cement', 'electronics', 'paints', 'pipes']
 
     const [form, setForm] = useState({
         name: '', category: 'steel', price: '', unit: 'kg', description: '', image: '', inStock: true
@@ -295,6 +295,8 @@ const ProductsView = () => {
                                         <option value="piece">Piece</option>
                                         <option value="bundle">Bundle</option>
                                         <option value="litre">Litre</option>
+                                        <option value="inch">Inch</option>
+                                        <option value="meter">Meter</option>
                                     </select>
                                 </div>
                             </div>
