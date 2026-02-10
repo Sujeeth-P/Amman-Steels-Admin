@@ -1,7 +1,9 @@
 import axios from 'axios'
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || ''
+
 const api = axios.create({
-    baseURL: '/api/admin',
+    baseURL: `${API_BASE_URL}/api/admin`,
     headers: {
         'Content-Type': 'application/json'
     }
@@ -10,6 +12,7 @@ const api = axios.create({
 // Request interceptor to add auth token
 api.interceptors.request.use(
     (config) => {
+        console.log('📌 Admin Origin:', window.location.origin, '→', config.url)
         const token = localStorage.getItem('admin_token')
         if (token) {
             config.headers.Authorization = `Bearer ${token}`
@@ -102,7 +105,7 @@ export const quotationsAPI = {
 
 // Create a separate axios instance for file uploads (multipart/form-data)
 const uploadApi = axios.create({
-    baseURL: '/api',
+    baseURL: `${API_BASE_URL}/api`,
     headers: {
         'Content-Type': 'multipart/form-data'
     }
