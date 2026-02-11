@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import toast from 'react-hot-toast'
 import useAuthStore from '../stores/authStore'
 
 const LoginView = () => {
@@ -35,6 +36,7 @@ const LoginView = () => {
         setLoading(false)
 
         if (result.success) {
+            toast.success(`Welcome back, ${result.user.name || result.user.email}! 👋`)
             const redirect = searchParams.get('redirect') || getDefaultRoute(result.user.role)
             navigate(redirect)
         } else {

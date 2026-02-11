@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
+import { Toaster } from 'react-hot-toast'
 import useAuthStore from './stores/authStore'
 
 // Layouts
@@ -83,56 +84,59 @@ const GuestRoute = ({ children }) => {
 
 function App() {
   return (
-    <Routes>
-      {/* Guest Routes */}
-      <Route path="/login" element={
-        <GuestRoute>
-          <LoginView />
-        </GuestRoute>
-      } />
+    <>
+      <Toaster position="top-center" toastOptions={{ duration: 3000, style: { background: '#1e293b', color: '#f1f5f9', borderRadius: '12px' } }} />
+      <Routes>
+        {/* Guest Routes */}
+        <Route path="/login" element={
+          <GuestRoute>
+            <LoginView />
+          </GuestRoute>
+        } />
 
-      <Route path="/unauthorized" element={<UnauthorizedView />} />
+        <Route path="/unauthorized" element={<UnauthorizedView />} />
 
-      {/* Super Admin Routes */}
-      <Route path="/super-admin" element={
-        <ProtectedRoute allowedRoles={['super_admin']}>
-          <AdminLayout />
-        </ProtectedRoute>
-      }>
-        <Route path="dashboard" element={<SuperAdminDashboard />} />
-        <Route path="users" element={<UsersView />} />
-        <Route path="reports" element={<ReportsView />} />
-      </Route>
+        {/* Super Admin Routes */}
+        <Route path="/super-admin" element={
+          <ProtectedRoute allowedRoles={['super_admin']}>
+            <AdminLayout />
+          </ProtectedRoute>
+        }>
+          <Route path="dashboard" element={<SuperAdminDashboard />} />
+          <Route path="users" element={<UsersView />} />
+          <Route path="reports" element={<ReportsView />} />
+        </Route>
 
-      {/* Admin Routes */}
-      <Route path="/admin" element={
-        <ProtectedRoute allowedRoles={['super_admin', 'admin']}>
-          <AdminLayout />
-        </ProtectedRoute>
-      }>
-        <Route path="dashboard" element={<AdminDashboard />} />
-        <Route path="products" element={<ProductsView />} />
-        <Route path="stock" element={<StockView />} />
-        <Route path="sales" element={<SalesView />} />
-      </Route>
+        {/* Admin Routes */}
+        <Route path="/admin" element={
+          <ProtectedRoute allowedRoles={['super_admin', 'admin']}>
+            <AdminLayout />
+          </ProtectedRoute>
+        }>
+          <Route path="dashboard" element={<AdminDashboard />} />
+          <Route path="products" element={<ProductsView />} />
+          <Route path="stock" element={<StockView />} />
+          <Route path="sales" element={<SalesView />} />
+        </Route>
 
-      {/* Staff Routes */}
-      <Route path="/staff" element={
-        <ProtectedRoute allowedRoles={['super_admin', 'admin', 'staff']}>
-          <AdminLayout />
-        </ProtectedRoute>
-      }>
-        <Route path="quotations" element={<QuotationsView />} />
-        <Route path="billing" element={<BillingView />} />
-        <Route path="orders" element={<OrdersView />} />
-      </Route>
+        {/* Staff Routes */}
+        <Route path="/staff" element={
+          <ProtectedRoute allowedRoles={['super_admin', 'admin', 'staff']}>
+            <AdminLayout />
+          </ProtectedRoute>
+        }>
+          <Route path="quotations" element={<QuotationsView />} />
+          <Route path="billing" element={<BillingView />} />
+          <Route path="orders" element={<OrdersView />} />
+        </Route>
 
-      {/* Root redirect */}
-      <Route path="/" element={<RoleBasedRedirect />} />
+        {/* Root redirect */}
+        <Route path="/" element={<RoleBasedRedirect />} />
 
-      {/* Catch all */}
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+        {/* Catch all */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </>
   )
 }
 
