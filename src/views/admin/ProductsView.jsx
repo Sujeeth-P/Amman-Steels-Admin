@@ -135,6 +135,7 @@ const ProductsView = () => {
 
             const productData = {
                 ...form,
+                price: Math.round(Number(form.price)),
                 image: imageUrl || 'https://via.placeholder.com/300'
             }
 
@@ -307,6 +308,7 @@ const ProductsView = () => {
                                     onChange={(e) => setForm({ ...form, price: e.target.value })}
                                     type="number"
                                     min="0"
+                                    step="1"
                                     className="input-field"
                                     required
                                 />
