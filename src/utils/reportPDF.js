@@ -122,7 +122,7 @@ const addSectionTitle = (doc, y, title) => {
 // ==========================================
 // SALES REPORT PDF
 // ==========================================
-export const generateSalesReportPDF = (salesData, productData) => {
+export const generateSalesReportPDF = (salesData, productData, customerData = {}) => {
     const doc = new jsPDF()
 
     let y = addHeader(doc, 'Sales Report', 'Last 30 Days Overview')
@@ -222,6 +222,128 @@ export const generateSalesReportPDF = (salesData, productData) => {
                 lineColor: [226, 232, 240],
                 lineWidth: 0.25
             }
+        })
+
+        y = doc.lastAutoTable.finalY + 12
+    }
+
+    // Customer Purchase Details
+    if (customerData?.customers?.length) {
+        // Always start customer section on a new page
+        doc.addPage()
+        y = 20
+
+        y = addSectionTitle(doc, y, 'Customer Purchase Details')
+
+        // Customer summary table
+        autoTable(doc, {
+            startY: y,
+            head: [['#', 'Customer Name', 'Phone', 'Email', 'Orders', 'Total Spent', 'Last Order']],
+            body: customerData.customers.map((cust, i) => [
+                i + 1,
+                cust._id || 'Unknown',
+                cust.phone || '—',
+                cust.email || '—',
+                cust.totalOrders || 0,
+                formatCurrency(cust.totalSpent),
+                cust.lastOrderDate ? formatDate(cust.lastOrderDate) : '—'
+            ]),
+            headStyles: {
+                fillColor: [30, 41, 59],
+                textColor: [255, 255, 255],
+                fontSize: 8,
+                fontStyle: 'bold',
+                halign: 'left'
+            },
+            bodyStyles: {
+                fontSize: 8,
+                cellPadding: 3,
+            },
+            columnStyles: {
+                0: { cellWidth: 10, halign: 'center' },
+                4: { halign: 'center' },
+                5: { halign: 'right' },
+                6: { halign: 'right' }
+            },
+            alternateRowStyles: {
+                fillColor: [248, 250, 252]
+            },
+            margin: { left: 14, right: 14 },
+            styles: {
+                lineColor: [226, 232, 240],
+                lineWidth: 0.25
+            }
+        })
+
+        y = doc.lastAutoTable.finalY + 12
+
+        // Per-customer product breakdown
+        customerData.customers.forEach((cust) => {
+            if (!cust.products?.length) return
+
+            // Check if we need a new page
+            if (y > 220) {
+                doc.addPage()
+                y = 20
+            }
+
+            // Customer name as sub-heading
+            doc.setFontSize(10)
+            doc.setFont('helvetica', 'bold')
+            doc.setTextColor(30, 41, 59)
+            doc.text(`${cust._id || 'Unknown Customer'}`, 14, y + 4)
+
+            // Customer contact info line
+            doc.setFontSize(8)
+            doc.setFont('helvetica', 'normal')
+            doc.setTextColor(100, 116, 139)
+            const contactParts = []
+            if (cust.phone) contactParts.push(`Phone: ${cust.phone}`)
+            if (cust.email) contactParts.push(`Email: ${cust.email}`)
+            if (cust.gstin) contactParts.push(`GSTIN: ${cust.gstin}`)
+            if (contactParts.length) {
+                doc.text(contactParts.join('  |  '), 14, y + 10)
+                y += 14
+            } else {
+                y += 8
+            }
+
+            // Products table for this customer
+            autoTable(doc, {
+                startY: y,
+                head: [['Product', 'Qty', 'Unit Price', 'Total']],
+                body: cust.products.map(p => [
+                    p.productName,
+                    p.quantity,
+                    formatCurrency(p.unitPrice),
+                    formatCurrency(p.totalAmount)
+                ]),
+                headStyles: {
+                    fillColor: [71, 85, 105], // slate-600
+                    textColor: [255, 255, 255],
+                    fontSize: 8,
+                    fontStyle: 'bold',
+                },
+                bodyStyles: {
+                    fontSize: 8,
+                    cellPadding: 3,
+                },
+                columnStyles: {
+                    1: { halign: 'center' },
+                    2: { halign: 'right' },
+                    3: { halign: 'right' }
+                },
+                alternateRowStyles: {
+                    fillColor: [248, 250, 252]
+                },
+                margin: { left: 20, right: 14 },
+                styles: {
+                    lineColor: [226, 232, 240],
+                    lineWidth: 0.25
+                }
+            })
+
+            y = doc.lastAutoTable.finalY + 10
         })
     }
 

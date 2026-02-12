@@ -91,6 +91,7 @@ export const reportsAPI = {
     getDashboard: () => api.get('/reports/dashboard'),
     getSales: (params) => api.get('/reports/sales', { params }),
     getProducts: () => api.get('/reports/products'),
+    getCustomers: () => api.get('/reports/customers'),
     getAnalytics: () => api.get('/reports/analytics')
 }
 

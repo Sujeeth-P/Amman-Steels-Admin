@@ -7,16 +7,20 @@ const SalesView = () => {
     const [loading, setLoading] = useState(true)
     const [salesData, setSalesData] = useState({ chart: [], summary: {} })
     const [productData, setProductData] = useState({ topProducts: [] })
+    const [customerData, setCustomerData] = useState({ customers: [] })
+    const [expandedCustomer, setExpandedCustomer] = useState(null)
 
     useEffect(() => {
         const loadSales = async () => {
             try {
-                const [salesRes, prodRes] = await Promise.all([
+                const [salesRes, prodRes, custRes] = await Promise.all([
                     reportsAPI.getSales({ groupBy: 'day' }),
-                    reportsAPI.getProducts()
+                    reportsAPI.getProducts(),
+                    reportsAPI.getCustomers()
                 ])
                 setSalesData(salesRes.data.data)
                 setProductData(prodRes.data.data)
+                setCustomerData(custRes.data.data)
             } catch (err) {
                 console.error('Failed to load sales:', err)
             } finally {
@@ -31,6 +35,15 @@ const SalesView = () => {
         currency: 'INR',
         maximumFractionDigits: 0
     }).format(amt || 0)
+
+    const formatDate = (date) => {
+        if (!date) return '—'
+        return new Date(date).toLocaleDateString('en-IN', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric'
+        })
+    }
 
     if (loading) {
         return (
@@ -47,12 +60,16 @@ const SalesView = () => {
 
     const handleDownloadPDF = () => {
         try {
-            generateSalesReportPDF(salesData, productData)
+            generateSalesReportPDF(salesData, productData, customerData)
             toast.success('PDF report downloaded successfully!')
         } catch (err) {
             console.error('PDF generation failed:', err)
             toast.error('Failed to generate PDF report')
         }
+    }
+
+    const toggleCustomer = (customerName) => {
+        setExpandedCustomer(expandedCustomer === customerName ? null : customerName)
     }
 
     return (
@@ -72,7 +89,7 @@ const SalesView = () => {
 
             <div className="space-y-6">
                 {/* Summary */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                     <div className="card bg-gradient-to-br from-green-500 to-green-600 text-white">
                         <p className="text-green-100 text-sm">Total Revenue</p>
                         <p className="text-3xl font-bold mt-1">{formatCurrency(salesData.summary.totalRevenue)}</p>
@@ -84,6 +101,10 @@ const SalesView = () => {
                     <div className="card bg-gradient-to-br from-amber-500 to-amber-600 text-white">
                         <p className="text-amber-100 text-sm">Total Orders</p>
                         <p className="text-3xl font-bold mt-1">{salesData.summary.totalOrders || 0}</p>
+                    </div>
+                    <div className="card bg-gradient-to-br from-purple-500 to-purple-600 text-white">
+                        <p className="text-purple-100 text-sm">Total Customers</p>
+                        <p className="text-3xl font-bold mt-1">{customerData.customers?.length || 0}</p>
                     </div>
                 </div>
 
@@ -125,6 +146,120 @@ const SalesView = () => {
                         ))}
                         {!productData.topProducts?.length && (
                             <p className="text-center text-steel-500 py-4">No sales data</p>
+                        )}
+                    </div>
+                </div>
+
+                {/* Customer Purchase Details */}
+                <div className="card">
+                    <h3 className="font-semibold text-steel-900 mb-4">Customer Purchase Details</h3>
+                    <div className="space-y-3">
+                        {customerData.customers?.map((customer) => (
+                            <div key={customer._id} className="border border-steel-200 rounded-lg overflow-hidden">
+                                {/* Customer Header - Clickable */}
+                                <div
+                                    className="flex items-center justify-between p-4 bg-steel-50 hover:bg-steel-100 transition-colors cursor-pointer"
+                                    onClick={() => toggleCustomer(customer._id)}
+                                >
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-700 text-white rounded-full flex items-center justify-center font-bold text-sm">
+                                            {customer._id?.charAt(0)?.toUpperCase() || '?'}
+                                        </div>
+                                        <div>
+                                            <p className="font-semibold text-steel-900">{customer._id || 'Unknown Customer'}</p>
+                                            <div className="flex items-center gap-3 text-sm text-steel-500 mt-0.5">
+                                                {customer.phone && (
+                                                    <span className="flex items-center gap-1">
+                                                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                                        </svg>
+                                                        {customer.phone}
+                                                    </span>
+                                                )}
+                                                {customer.email && (
+                                                    <span className="flex items-center gap-1">
+                                                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                                        </svg>
+                                                        {customer.email}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-6">
+                                        <div className="text-right">
+                                            <p className="font-semibold text-steel-900">{formatCurrency(customer.totalSpent)}</p>
+                                            <p className="text-xs text-steel-500">{customer.totalOrders} order{customer.totalOrders !== 1 ? 's' : ''}</p>
+                                        </div>
+                                        <div className="text-right hidden sm:block">
+                                            <p className="text-xs text-steel-400">Last Order</p>
+                                            <p className="text-sm text-steel-600">{formatDate(customer.lastOrderDate)}</p>
+                                        </div>
+                                        <svg
+                                            className={`w-5 h-5 text-steel-400 transition-transform ${expandedCustomer === customer._id ? 'rotate-180' : ''}`}
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </div>
+                                </div>
+
+                                {/* Expanded: Customer's Product Purchases */}
+                                {expandedCustomer === customer._id && (
+                                    <div className="p-4 bg-white border-t border-steel-200">
+                                        {/* Customer Details */}
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4 p-3 bg-primary-50 rounded-lg text-sm">
+                                            {customer.address && (
+                                                <div>
+                                                    <span className="text-steel-500 font-medium">Address: </span>
+                                                    <span className="text-steel-700">{customer.address}</span>
+                                                </div>
+                                            )}
+                                            {customer.gstin && (
+                                                <div>
+                                                    <span className="text-steel-500 font-medium">GSTIN: </span>
+                                                    <span className="text-steel-700">{customer.gstin}</span>
+                                                </div>
+                                            )}
+                                            <div>
+                                                <span className="text-steel-500 font-medium">Total Spent: </span>
+                                                <span className="text-steel-700 font-semibold">{formatCurrency(customer.totalSpent)}</span>
+                                            </div>
+                                        </div>
+
+                                        {/* Products Table */}
+                                        <h4 className="text-sm font-semibold text-steel-700 mb-2">Products Purchased</h4>
+                                        <div className="overflow-x-auto">
+                                            <table className="w-full text-sm">
+                                                <thead>
+                                                    <tr className="bg-steel-100 text-steel-600">
+                                                        <th className="text-left p-2.5 rounded-tl-lg font-semibold">Product</th>
+                                                        <th className="text-center p-2.5 font-semibold">Qty</th>
+                                                        <th className="text-right p-2.5 font-semibold">Unit Price</th>
+                                                        <th className="text-right p-2.5 rounded-tr-lg font-semibold">Total</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {customer.products?.map((prod, idx) => (
+                                                        <tr key={idx} className={`border-b border-steel-100 ${idx % 2 === 0 ? 'bg-white' : 'bg-steel-50'}`}>
+                                                            <td className="p-2.5 text-steel-800">{prod.productName}</td>
+                                                            <td className="p-2.5 text-center text-steel-700">{prod.quantity}</td>
+                                                            <td className="p-2.5 text-right text-steel-700">{formatCurrency(prod.unitPrice)}</td>
+                                                            <td className="p-2.5 text-right font-semibold text-steel-900">{formatCurrency(prod.totalAmount)}</td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                        {!customerData.customers?.length && (
+                            <p className="text-center text-steel-500 py-4">No customer data available</p>
                         )}
                     </div>
                 </div>
