@@ -102,8 +102,15 @@ const AdminLayout = () => {
 
         // All roles can access these - Staff handles quotations, Admin/SuperAdmin view results
         items.push(
-            { name: 'Quotations', path: '/staff/quotations', icon: 'enquiry' },
-            { name: 'Billing', path: '/staff/billing', icon: 'receipt' },
+            { name: 'Quotations', path: '/staff/quotations', icon: 'enquiry' }
+        )
+
+        // Billing is only for admin and staff
+        if (role !== 'super_admin') {
+            items.push({ name: 'Billing', path: '/staff/billing', icon: 'receipt' })
+        }
+
+        items.push(
             { name: 'Orders', path: '/staff/orders', icon: 'orders' }
         )
 
