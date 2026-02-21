@@ -294,6 +294,7 @@ const ProductsView = () => {
                                     >
                                         <option value="kg">Kg</option>
                                         <option value="piece">Piece</option>
+                                        <option value="bag">Bag</option>
                                         <option value="bundle">Bundle</option>
                                         <option value="litre">Litre</option>
                                         <option value="inch">Inch</option>
