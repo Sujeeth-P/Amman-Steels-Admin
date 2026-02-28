@@ -119,15 +119,23 @@ function App() {
           <Route path="sales" element={<SalesView />} />
         </Route>
 
-        {/* Staff Routes */}
+        {/* Staff Routes (accessible by all roles) */}
         <Route path="/staff" element={
           <ProtectedRoute allowedRoles={['super_admin', 'admin', 'staff']}>
             <AdminLayout />
           </ProtectedRoute>
         }>
           <Route path="quotations" element={<QuotationsView />} />
-          <Route path="billing" element={<BillingView />} />
           <Route path="orders" element={<OrdersView />} />
+        </Route>
+
+        {/* Billing - Staff only */}
+        <Route path="/staff/billing" element={
+          <ProtectedRoute allowedRoles={['staff']}>
+            <AdminLayout />
+          </ProtectedRoute>
+        }>
+          <Route index element={<BillingView />} />
         </Route>
 
         {/* Root redirect */}

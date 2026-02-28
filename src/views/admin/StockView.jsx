@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { stockAPI, productsAPI } from '../../services/api'
+import { FiPackage, FiPlus, FiMinus, FiSearch, FiCheckCircle, FiAlertTriangle, FiAlertCircle, FiXCircle, FiEdit2, FiLoader, FiSave, FiX, FiBarChart2, FiList, FiBell, FiArrowDownCircle, FiArrowUpCircle, FiRefreshCw, FiBox } from 'react-icons/fi'
 
 const StockView = () => {
     const [loading, setLoading] = useState(true)
@@ -140,9 +141,9 @@ const StockView = () => {
     const getStockStatus = (product) => {
         const qty = product.stockQuantity || 0
         const threshold = product.lowStockThreshold || 10
-        if (qty === 0) return { label: 'Out of Stock', color: '#dc2626', bg: '#fef2f2', border: '#fecaca' }
-        if (qty <= threshold) return { label: 'Low Stock', color: '#d97706', bg: '#fffbeb', border: '#fde68a' }
-        return { label: 'Healthy', color: '#16a34a', bg: '#f0fdf4', border: '#bbf7d0' }
+        if (qty === 0) return { label: 'Out of Stock', color: '#dc2626', bg: '#fef2f2', border: '#e2e8f0', accent: '#dc2626', icon: <FiXCircle size={13} /> }
+        if (qty <= threshold) return { label: 'Low Stock', color: '#d97706', bg: '#fffbeb', border: '#e2e8f0', accent: '#d97706', icon: <FiAlertTriangle size={13} /> }
+        return { label: 'Healthy', color: '#16a34a', bg: '#f0fdf4', border: '#e2e8f0', accent: '#16a34a', icon: <FiCheckCircle size={13} /> }
     }
 
     const getStockBarPercent = (product) => {
@@ -154,9 +155,9 @@ const StockView = () => {
 
     const getStockBarColor = (product) => {
         const status = getStockStatus(product)
-        if (status.label === 'Out of Stock') return 'linear-gradient(90deg, #dc2626, #ef4444)'
-        if (status.label === 'Low Stock') return 'linear-gradient(90deg, #d97706, #f59e0b)'
-        return 'linear-gradient(90deg, #16a34a, #22c55e)'
+        if (status.label === 'Out of Stock') return '#dc2626'
+        if (status.label === 'Low Stock') return '#d97706'
+        return '#16a34a'
     }
 
     const filteredStockLevels = stockLevels.filter(p => {
@@ -194,7 +195,10 @@ const StockView = () => {
                     boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
                     animation: 'fadeIn 0.3s ease'
                 }}>
-                    {notification.type === 'error' ? '❌ ' : '✅ '}{notification.message}
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        {notification.type === 'error' ? <FiXCircle size={18} /> : <FiCheckCircle size={18} />}
+                        {notification.message}
+                    </span>
                 </div>
             )}
 
@@ -221,18 +225,14 @@ const StockView = () => {
                             transition: 'all 0.2s'
                         }}
                     >
-                        {alertLoading ? '⏳' : '🔔'} {alertLoading ? 'Checking...' : 'Check Low Stock Alerts'}
+                        {alertLoading ? <FiLoader size={14} className="animate-spin" /> : <FiBell size={14} />} {alertLoading ? 'Checking...' : 'Check Low Stock Alerts'}
                     </button>
                     <button onClick={() => openModal('in')} className="btn-primary flex items-center gap-2">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                        </svg>
+                        <FiArrowDownCircle size={18} />
                         Stock In
                     </button>
                     <button onClick={() => openModal('out')} className="btn-secondary flex items-center gap-2">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 12H4" />
-                        </svg>
+                        <FiArrowUpCircle size={18} />
                         Stock Out
                     </button>
                 </div>
@@ -241,40 +241,76 @@ const StockView = () => {
             {/* Summary Cards */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                 <div style={{
-                    background: 'linear-gradient(135deg, #eff6ff, #dbeafe)',
-                    border: '1px solid #93c5fd',
-                    borderRadius: 14,
-                    padding: 20
+                    background: '#fff',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: 12,
+                    padding: '18px 20px',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 14
                 }}>
-                    <p style={{ color: '#3b82f6', fontSize: 13, fontWeight: 500, marginBottom: 4 }}>Total Products</p>
-                    <p style={{ fontSize: 28, fontWeight: 800, color: '#1e40af' }}>{summary.totalProducts || 0}</p>
+                    <div style={{ background: '#eff6ff', borderRadius: 10, padding: 10, display: 'flex' }}>
+                        <FiPackage size={22} color="#3b82f6" />
+                    </div>
+                    <div>
+                        <p style={{ color: '#64748b', fontSize: 12, fontWeight: 500, marginBottom: 2, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Total Products</p>
+                        <p style={{ fontSize: 26, fontWeight: 800, color: '#1e293b', lineHeight: 1 }}>{summary.totalProducts || 0}</p>
+                    </div>
                 </div>
                 <div style={{
-                    background: 'linear-gradient(135deg, #f0fdf4, #dcfce7)',
-                    border: '1px solid #86efac',
-                    borderRadius: 14,
-                    padding: 20
+                    background: '#fff',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: 12,
+                    padding: '18px 20px',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 14
                 }}>
-                    <p style={{ color: '#16a34a', fontSize: 13, fontWeight: 500, marginBottom: 4 }}>In Stock</p>
-                    <p style={{ fontSize: 28, fontWeight: 800, color: '#15803d' }}>{summary.inStock || 0}</p>
+                    <div style={{ background: '#f0fdf4', borderRadius: 10, padding: 10, display: 'flex' }}>
+                        <FiCheckCircle size={22} color="#16a34a" />
+                    </div>
+                    <div>
+                        <p style={{ color: '#64748b', fontSize: 12, fontWeight: 500, marginBottom: 2, textTransform: 'uppercase', letterSpacing: '0.5px' }}>In Stock</p>
+                        <p style={{ fontSize: 26, fontWeight: 800, color: '#1e293b', lineHeight: 1 }}>{summary.inStock || 0}</p>
+                    </div>
                 </div>
                 <div style={{
-                    background: 'linear-gradient(135deg, #fef2f2, #fecaca)',
-                    border: '1px solid #fca5a5',
-                    borderRadius: 14,
-                    padding: 20
+                    background: '#fff',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: 12,
+                    padding: '18px 20px',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 14
                 }}>
-                    <p style={{ color: '#dc2626', fontSize: 13, fontWeight: 500, marginBottom: 4 }}>Out of Stock</p>
-                    <p style={{ fontSize: 28, fontWeight: 800, color: '#b91c1c' }}>{summary.outOfStock || 0}</p>
+                    <div style={{ background: '#fef2f2', borderRadius: 10, padding: 10, display: 'flex' }}>
+                        <FiXCircle size={22} color="#dc2626" />
+                    </div>
+                    <div>
+                        <p style={{ color: '#64748b', fontSize: 12, fontWeight: 500, marginBottom: 2, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Out of Stock</p>
+                        <p style={{ fontSize: 26, fontWeight: 800, color: '#1e293b', lineHeight: 1 }}>{summary.outOfStock || 0}</p>
+                    </div>
                 </div>
                 <div style={{
-                    background: 'linear-gradient(135deg, #fffbeb, #fef3c7)',
-                    border: '1px solid #fde68a',
-                    borderRadius: 14,
-                    padding: 20
+                    background: '#fff',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: 12,
+                    padding: '18px 20px',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 14
                 }}>
-                    <p style={{ color: '#d97706', fontSize: 13, fontWeight: 500, marginBottom: 4 }}>⚠️ Low Stock</p>
-                    <p style={{ fontSize: 28, fontWeight: 800, color: '#92400e' }}>{summary.lowStock || 0}</p>
+                    <div style={{ background: '#fffbeb', borderRadius: 10, padding: 10, display: 'flex' }}>
+                        <FiAlertTriangle size={22} color="#d97706" />
+                    </div>
+                    <div>
+                        <p style={{ color: '#64748b', fontSize: 12, fontWeight: 500, marginBottom: 2, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Low Stock</p>
+                        <p style={{ fontSize: 26, fontWeight: 800, color: '#1e293b', lineHeight: 1 }}>{summary.lowStock || 0}</p>
+                    </div>
                 </div>
             </div>
 
@@ -303,7 +339,7 @@ const StockView = () => {
                         boxShadow: activeTab === 'levels' ? '0 2px 8px rgba(0,0,0,0.08)' : 'none'
                     }}
                 >
-                    📊 Stock Levels
+                    <FiBarChart2 size={16} style={{ marginRight: 6 }} /> Stock Levels
                 </button>
                 <button
                     onClick={() => setActiveTab('movements')}
@@ -320,7 +356,7 @@ const StockView = () => {
                         boxShadow: activeTab === 'movements' ? '0 2px 8px rgba(0,0,0,0.08)' : 'none'
                     }}
                 >
-                    📋 Movement History
+                    <FiList size={16} style={{ marginRight: 6 }} /> Movement History
                 </button>
             </div>
 
@@ -338,10 +374,7 @@ const StockView = () => {
                         background: '#f8fafc'
                     }}>
                         <div style={{ position: 'relative', flex: '1 1 250px' }}>
-                            <svg style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}
-                                width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
+                            <FiSearch size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
                             <input
                                 type="text"
                                 placeholder="Search products..."
@@ -360,10 +393,10 @@ const StockView = () => {
                         </div>
                         <div style={{ display: 'flex', gap: 6 }}>
                             {[
-                                { id: 'all', label: 'All', emoji: '📦' },
-                                { id: 'healthy', label: 'Healthy', emoji: '✅' },
-                                { id: 'low', label: 'Low Stock', emoji: '⚠️' },
-                                { id: 'out', label: 'Out of Stock', emoji: '🚫' }
+                                { id: 'all', label: 'All', icon: <FiPackage size={13} /> },
+                                { id: 'healthy', label: 'Healthy', icon: <FiCheckCircle size={13} /> },
+                                { id: 'low', label: 'Low Stock', icon: <FiAlertTriangle size={13} /> },
+                                { id: 'out', label: 'Out of Stock', icon: <FiXCircle size={13} /> }
                             ].map(f => (
                                 <button
                                     key={f.id}
@@ -381,7 +414,7 @@ const StockView = () => {
                                         whiteSpace: 'nowrap'
                                     }}
                                 >
-                                    {f.emoji} {f.label}
+                                    <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>{f.icon} {f.label}</span>
                                 </button>
                             ))}
                         </div>
@@ -390,13 +423,13 @@ const StockView = () => {
                     {/* Stock Levels Grid */}
                     {loading ? (
                         <div className="flex items-center justify-center py-8">
-                            <div className="w-6 h-6 border-2 border-primary-600 border-t-transparent rounded-full animate-spin"></div>
+                            <FiLoader className="w-6 h-6 text-primary-600 animate-spin" />
                         </div>
                     ) : (
                         <div style={{ padding: 20 }}>
                             {filteredStockLevels.length === 0 ? (
                                 <div style={{ textAlign: 'center', padding: '40px 20px', color: '#94a3b8' }}>
-                                    <p style={{ fontSize: 48, marginBottom: 8 }}>📦</p>
+                                    <FiBox size={48} style={{ marginBottom: 8, color: '#cbd5e1' }} />
                                     <p style={{ fontWeight: 600 }}>No products match your filter</p>
                                 </div>
                             ) : (
@@ -409,12 +442,12 @@ const StockView = () => {
 
                                         return (
                                             <div key={product.id || product._id} style={{
-                                                border: `1px solid ${status.border}`,
-                                                borderRadius: 14,
+                                                border: '1px solid #e2e8f0',
+                                                borderRadius: 12,
                                                 background: '#fff',
                                                 overflow: 'hidden',
                                                 transition: 'all 0.3s',
-                                                boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
+                                                boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
                                             }}>
                                                 {/* Card Header */}
                                                 <div style={{
@@ -422,8 +455,7 @@ const StockView = () => {
                                                     alignItems: 'center',
                                                     gap: 12,
                                                     padding: '14px 16px',
-                                                    borderBottom: `1px solid ${status.border}`,
-                                                    background: status.bg
+                                                    borderBottom: '1px solid #f1f5f9'
                                                 }}>
                                                     <div style={{
                                                         width: 44,
@@ -454,7 +486,7 @@ const StockView = () => {
                                                         </h4>
                                                         <span style={{
                                                             fontSize: 11,
-                                                            color: '#64748b',
+                                                            color: '#94a3b8',
                                                             textTransform: 'capitalize'
                                                         }}>
                                                             {product.category} · {product.id}
@@ -462,15 +494,17 @@ const StockView = () => {
                                                     </div>
                                                     <span style={{
                                                         fontSize: 11,
-                                                        fontWeight: 700,
-                                                        padding: '3px 10px',
-                                                        borderRadius: 20,
+                                                        fontWeight: 600,
+                                                        padding: '4px 10px',
+                                                        borderRadius: 6,
                                                         color: status.color,
-                                                        background: '#fff',
-                                                        border: `1px solid ${status.border}`,
-                                                        whiteSpace: 'nowrap'
+                                                        background: status.bg,
+                                                        whiteSpace: 'nowrap',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: 4
                                                     }}>
-                                                        {status.label}
+                                                        {status.icon} {status.label}
                                                     </span>
                                                 </div>
 
@@ -594,7 +628,7 @@ const StockView = () => {
                                                                         cursor: saving ? 'not-allowed' : 'pointer'
                                                                     }}
                                                                 >
-                                                                    {saving ? '⏳ Saving...' : '✅ Save'}
+                                                                    <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5 }}>{saving ? <><FiLoader size={13} className="animate-spin" /> Saving...</> : <><FiSave size={13} /> Save</>}</span>
                                                                 </button>
                                                                 <button
                                                                     onClick={() => setEditingProduct(null)}
@@ -644,7 +678,7 @@ const StockView = () => {
                                                                 e.currentTarget.style.color = '#475569'
                                                             }}
                                                         >
-                                                            ✏️ Edit Stock
+                                                            <FiEdit2 size={13} /> Edit Stock
                                                         </button>
                                                     )}
                                                 </div>
@@ -661,10 +695,10 @@ const StockView = () => {
             {/* Movements Tab */}
             {activeTab === 'movements' && (
                 <div className="card">
-                    <h3 className="font-semibold text-steel-900 mb-4">Recent Stock Movements</h3>
+                    <h3 className="font-semibold text-steel-900 mb-4 flex items-center gap-2"><FiList className="text-primary-600" size={18} /> Recent Stock Movements</h3>
                     {loading ? (
                         <div className="flex items-center justify-center py-8">
-                            <div className="w-6 h-6 border-2 border-primary-600 border-t-transparent rounded-full animate-spin"></div>
+                            <FiLoader className="w-6 h-6 text-primary-600 animate-spin" />
                         </div>
                     ) : (
                         <div className="overflow-x-auto">
@@ -721,7 +755,7 @@ const StockView = () => {
                     <div className="bg-white rounded-xl shadow-xl w-full max-w-md animate-fadeIn">
                         <div className="p-6 border-b border-steel-200">
                             <h3 className="text-lg font-semibold">
-                                {modalType === 'in' ? '📦 Stock In' : modalType === 'out' ? '📤 Stock Out' : '🔄 Adjustment'}
+                                <span className="flex items-center gap-2">{modalType === 'in' ? <><FiArrowDownCircle size={20} /> Stock In</> : modalType === 'out' ? <><FiArrowUpCircle size={20} /> Stock Out</> : <><FiRefreshCw size={20} /> Adjustment</>}</span>
                             </h3>
                         </div>
                         <form onSubmit={handleSubmit} className="p-6 space-y-4">
@@ -811,8 +845,8 @@ const StockView = () => {
                             </div>
                             <div className="flex gap-3 pt-4">
                                 <button type="button" onClick={() => setShowModal(false)} className="btn-secondary flex-1">Cancel</button>
-                                <button type="submit" disabled={saving} className="btn-primary flex-1">
-                                    {saving ? 'Saving...' : 'Save'}
+                                <button type="submit" disabled={saving} className="btn-primary flex-1 flex items-center justify-center gap-2">
+                                    {saving ? <><FiLoader size={16} className="animate-spin" /> Saving...</> : <><FiSave size={16} /> Save</>}
                                 </button>
                             </div>
                         </form>

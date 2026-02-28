@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { productsAPI, ordersAPI } from '../../services/api'
+import { FiSearch, FiUser, FiPhone, FiMapPin, FiShoppingCart, FiX, FiPlus, FiMinus, FiAlertCircle, FiCheckCircle, FiAlertTriangle, FiLoader, FiCreditCard } from 'react-icons/fi'
 
 const BillingView = () => {
     const [products, setProducts] = useState([])
@@ -206,18 +207,21 @@ const BillingView = () => {
                 {/* Products */}
                 <div className="lg:col-span-2 space-y-4">
                     <div className="card">
-                        <input
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            type="text"
-                            placeholder="Search products by name or code..."
-                            className="input-field"
-                        />
+                        <div className="relative">
+                            <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-steel-400 w-4 h-4" />
+                            <input
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                type="text"
+                                placeholder="Search products by name or code..."
+                                className="input-field pl-10"
+                            />
+                        </div>
                     </div>
 
                     {loading ? (
                         <div className="card flex justify-center py-8">
-                            <div className="w-6 h-6 border-2 border-primary-600 border-t-transparent rounded-full animate-spin"></div>
+                            <FiLoader className="w-6 h-6 text-primary-600 animate-spin" />
                         </div>
                     ) : (
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -263,64 +267,67 @@ const BillingView = () => {
                 <div className="space-y-4">
                     {/* Customer Info */}
                     <div className="card">
-                        <h3 className="font-semibold text-steel-900 mb-3">Customer Details</h3>
+                        <h3 className="font-semibold text-steel-900 mb-3 flex items-center gap-2"><FiUser className="w-4 h-4 text-primary-600" /> Customer Details</h3>
                         <div className="space-y-3">
                             <div>
-                                <input
-                                    value={customer.name}
-                                    onChange={(e) => handleCustomerChange('name', e.target.value)}
-                                    onBlur={() => handleBlur('name')}
-                                    type="text"
-                                    placeholder="Customer Name *"
-                                    className={inputClass('name')}
-                                    required
-                                />
+                                <div className="relative">
+                                    <FiUser className="absolute left-3 top-1/2 -translate-y-1/2 text-steel-400 w-4 h-4" />
+                                    <input
+                                        value={customer.name}
+                                        onChange={(e) => handleCustomerChange('name', e.target.value)}
+                                        onBlur={() => handleBlur('name')}
+                                        type="text"
+                                        placeholder="Customer Name *"
+                                        className={`${inputClass('name')} pl-10`}
+                                        required
+                                    />
+                                </div>
                                 {touched.name && fieldErrors.name && (
                                     <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
-                                        <svg className="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                                        </svg>
+                                        <FiAlertCircle className="w-3 h-3 flex-shrink-0" />
                                         {fieldErrors.name}
                                     </p>
                                 )}
                             </div>
                             <div>
-                                <input
-                                    value={customer.phone}
-                                    onChange={(e) => {
-                                        // Only allow digits, max 10
-                                        const val = e.target.value.replace(/\D/g, '').slice(0, 10)
-                                        handleCustomerChange('phone', val)
-                                    }}
-                                    onBlur={() => handleBlur('phone')}
-                                    type="tel"
-                                    placeholder="Phone Number *"
-                                    className={inputClass('phone')}
-                                    maxLength={10}
-                                />
+                                <div className="relative">
+                                    <FiPhone className="absolute left-3 top-1/2 -translate-y-1/2 text-steel-400 w-4 h-4" />
+                                    <input
+                                        value={customer.phone}
+                                        onChange={(e) => {
+                                            // Only allow digits, max 10
+                                            const val = e.target.value.replace(/\D/g, '').slice(0, 10)
+                                            handleCustomerChange('phone', val)
+                                        }}
+                                        onBlur={() => handleBlur('phone')}
+                                        type="tel"
+                                        placeholder="Phone Number *"
+                                        className={`${inputClass('phone')} pl-10`}
+                                        maxLength={10}
+                                    />
+                                </div>
                                 {touched.phone && fieldErrors.phone && (
                                     <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
-                                        <svg className="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                                        </svg>
+                                        <FiAlertCircle className="w-3 h-3 flex-shrink-0" />
                                         {fieldErrors.phone}
                                     </p>
                                 )}
                             </div>
                             <div>
-                                <input
-                                    value={customer.address}
-                                    onChange={(e) => handleCustomerChange('address', e.target.value)}
-                                    onBlur={() => handleBlur('address')}
-                                    type="text"
-                                    placeholder="Address"
-                                    className={inputClass('address')}
-                                />
+                                <div className="relative">
+                                    <FiMapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-steel-400 w-4 h-4" />
+                                    <input
+                                        value={customer.address}
+                                        onChange={(e) => handleCustomerChange('address', e.target.value)}
+                                        onBlur={() => handleBlur('address')}
+                                        type="text"
+                                        placeholder="Address"
+                                        className={`${inputClass('address')} pl-10`}
+                                    />
+                                </div>
                                 {touched.address && fieldErrors.address && (
                                     <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
-                                        <svg className="w-3 h-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                                        </svg>
+                                        <FiAlertCircle className="w-3 h-3 flex-shrink-0" />
                                         {fieldErrors.address}
                                     </p>
                                 )}
@@ -330,7 +337,7 @@ const BillingView = () => {
 
                     {/* Cart */}
                     <div className="card">
-                        <h3 className="font-semibold text-steel-900 mb-3">Cart ({cart.length} items)</h3>
+                        <h3 className="font-semibold text-steel-900 mb-3 flex items-center gap-2"><FiShoppingCart className="w-4 h-4 text-primary-600" /> Cart ({cart.length} items)</h3>
                         {!cart.length ? (
                             <div className="text-center text-steel-500 py-4">No items in cart</div>
                         ) : (
@@ -340,15 +347,13 @@ const BillingView = () => {
                                         <div className="flex items-start justify-between mb-2">
                                             <p className="font-medium text-steel-900 text-sm truncate flex-1">{item.name}</p>
                                             <button onClick={() => removeFromCart(i)} className="p-1 text-red-500 hover:bg-red-50 rounded ml-2 flex-shrink-0">
-                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                                                </svg>
+                                                <FiX className="w-4 h-4" />
                                             </button>
                                         </div>
                                         <div className="flex items-center justify-between gap-2">
                                             <span className="text-xs text-steel-500">{formatCurrency(item.price)}/{item.unit}</span>
                                             <div className="flex items-center gap-1">
-                                                <button onClick={() => updateQty(i, -1)} className="w-7 h-7 flex items-center justify-center bg-steel-200 hover:bg-steel-300 rounded text-sm font-bold">-</button>
+                                                <button onClick={() => updateQty(i, -1)} className="w-7 h-7 flex items-center justify-center bg-steel-200 hover:bg-steel-300 rounded"><FiMinus className="w-3 h-3" /></button>
                                                 <input
                                                     type="text"
                                                     inputMode="numeric"
@@ -357,7 +362,7 @@ const BillingView = () => {
                                                     onBlur={() => finalizeQty(i)}
                                                     className="w-14 h-7 text-center text-sm font-semibold border border-steel-200 rounded focus:outline-none focus:border-primary-400"
                                                 />
-                                                <button onClick={() => updateQty(i, 1)} className="w-7 h-7 flex items-center justify-center bg-steel-200 hover:bg-steel-300 rounded text-sm font-bold">+</button>
+                                                <button onClick={() => updateQty(i, 1)} className="w-7 h-7 flex items-center justify-center bg-steel-200 hover:bg-steel-300 rounded"><FiPlus className="w-3 h-3" /></button>
                                             </div>
                                             <span className="text-sm font-bold text-primary-600 min-w-[70px] text-right">{formatCurrency(item.price * item.quantity)}</span>
                                         </div>
@@ -416,19 +421,25 @@ const BillingView = () => {
 
                     {/* Messages */}
                     {error && (
-                        <div className="bg-red-50 text-red-700 p-3 rounded-lg text-sm">{error}</div>
+                        <div className="bg-red-50 text-red-700 p-3 rounded-lg text-sm flex items-center gap-2">
+                            <FiAlertTriangle className="w-4 h-4 flex-shrink-0" />
+                            {error}
+                        </div>
                     )}
                     {success && (
-                        <div className="bg-green-50 text-green-700 p-3 rounded-lg text-sm">Order created successfully!</div>
+                        <div className="bg-green-50 text-green-700 p-3 rounded-lg text-sm flex items-center gap-2">
+                            <FiCheckCircle className="w-4 h-4 flex-shrink-0" />
+                            Order created successfully!
+                        </div>
                     )}
 
                     {/* Submit */}
                     <button
                         onClick={handleSubmit}
                         disabled={submitting || !cart.length}
-                        className={`btn-primary w-full py-3 text-lg ${!cart.length ? 'opacity-50' : ''}`}
+                        className={`btn-primary w-full py-3 text-lg flex items-center justify-center gap-2 ${!cart.length ? 'opacity-50' : ''}`}
                     >
-                        {submitting ? 'Creating Order...' : 'Create Order'}
+                        {submitting ? <><FiLoader className="w-5 h-5 animate-spin" /> Creating Order...</> : <><FiCreditCard className="w-5 h-5" /> Create Order</>}
                     </button>
                 </div>
             </div>

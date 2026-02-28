@@ -105,8 +105,8 @@ const AdminLayout = () => {
             { name: 'Quotations', path: '/staff/quotations', icon: 'enquiry' }
         )
 
-        // Billing is only for admin and staff
-        if (role !== 'super_admin') {
+        // Billing is only for staff
+        if (role === 'staff') {
             items.push({ name: 'Billing', path: '/staff/billing', icon: 'receipt' })
         }
 

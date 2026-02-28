@@ -20,19 +20,27 @@ const SalesView = () => {
     const fetchData = async (dateParams = {}) => {
         try {
             const salesParams = { groupBy: 'day', ...dateParams }
-            const [salesRes, prodRes, custRes, analyticsRes] = await Promise.all([
+            const [salesRes, prodRes, custRes] = await Promise.all([
                 reportsAPI.getSales(salesParams),
                 reportsAPI.getProducts(dateParams),
-                reportsAPI.getCustomers(dateParams),
-                reportsAPI.getAnalytics(dateParams)
+                reportsAPI.getCustomers(dateParams)
             ])
             setSalesData(salesRes.data.data)
             setProductData(prodRes.data.data)
             setCustomerData(custRes.data.data)
-            setAnalytics(analyticsRes.data.data)
         } catch (err) {
             console.error('Failed to load sales:', err)
             toast.error('Failed to load sales data')
+        }
+
+        // Analytics is super_admin only — load separately so a 403 doesn't break the page
+        try {
+            const analyticsRes = await reportsAPI.getAnalytics(dateParams)
+            setAnalytics(analyticsRes.data.data)
+        } catch (err) {
+            // Admin users will get 403 here — that's expected
+            console.log('Analytics not available for this role')
+            setAnalytics(null)
         }
     }
 
