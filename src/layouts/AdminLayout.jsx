@@ -145,7 +145,7 @@ const AdminLayout = () => {
                 <div className="h-16 flex items-center justify-center border-b border-steel-200 px-4">
                     {sidebarOpen ? (
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-gradient-to-br from-primary-600 to-primary-800 rounded-lg flex items-center justify-center">
+                            <div className="w-10 h-10 bg-gradient-to-br from-primary-600 to-primary-800 rounded-full flex items-center justify-center">
                                 <span className="text-white font-bold text-lg">SA</span>
                             </div>
                             <div>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { ordersAPI } from '../../services/api'
+import { generateInvoicePDF } from '../../utils/generateInvoicePDF'
 
 const OrdersView = () => {
     const [loading, setLoading] = useState(true)
@@ -43,12 +44,31 @@ const OrdersView = () => {
     const generateInvoice = async (order) => {
         try {
             await ordersAPI.generateInvoice(order._id)
+            // Fetch full order details for the PDF
+            const res = await ordersAPI.getById(order._id)
+            const fullOrder = res.data.data
+            // Generate and open print dialog
+            generateInvoicePDF(fullOrder)
+            // Refresh the orders list
             loadOrders()
             if (selectedOrder?._id === order._id) {
-                viewOrder(order)
+                setSelectedOrder(fullOrder)
             }
         } catch (err) {
             console.error('Failed to generate invoice:', err)
+        }
+    }
+
+    const printInvoice = async (order) => {
+        try {
+            let fullOrder = order
+            if (!order.items || order.items.length === 0) {
+                const res = await ordersAPI.getById(order._id)
+                fullOrder = res.data.data
+            }
+            generateInvoicePDF(fullOrder)
+        } catch (err) {
+            console.error('Failed to print invoice:', err)
         }
     }
 
@@ -178,6 +198,17 @@ const OrdersView = () => {
                                                         </svg>
                                                     </button>
                                                 )}
+                                                {order.invoiceNumber && (
+                                                    <button
+                                                        onClick={() => printInvoice(order)}
+                                                        className="p-1.5 text-steel-600 hover:text-blue-600 hover:bg-blue-50 rounded"
+                                                        title="Print Invoice"
+                                                    >
+                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                                        </svg>
+                                                    </button>
+                                                )}
                                             </div>
                                         </td>
                                     </tr>
@@ -233,6 +264,35 @@ const OrdersView = () => {
                                 </svg>
                             </button>
                         </div>
+                        {/* Print Invoice Button in Modal */}
+                        {selectedOrder.invoiceNumber && (
+                            <div className="px-6 py-3 bg-green-50 border-b border-green-100 flex items-center justify-between">
+                                <span className="text-sm text-green-700">✅ Invoice #{selectedOrder.invoiceNumber} generated</span>
+                                <button
+                                    onClick={() => printInvoice(selectedOrder)}
+                                    className="px-4 py-1.5 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+                                >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                    </svg>
+                                    Print Invoice
+                                </button>
+                            </div>
+                        )}
+                        {!selectedOrder.invoiceNumber && selectedOrder.status !== 'cancelled' && (
+                            <div className="px-6 py-3 bg-amber-50 border-b border-amber-100 flex items-center justify-between">
+                                <span className="text-sm text-amber-700">⚠️ Invoice not yet generated</span>
+                                <button
+                                    onClick={() => generateInvoice(selectedOrder)}
+                                    className="px-4 py-1.5 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 transition-colors flex items-center gap-2"
+                                >
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                    Generate Invoice
+                                </button>
+                            </div>
+                        )}
                         <div className="p-6 space-y-6">
                             {/* Customer */}
                             <div>

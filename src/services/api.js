@@ -54,7 +54,8 @@ export const usersAPI = {
     update: (id, data) => api.put(`/users/${id}`, data),
     delete: (id) => api.delete(`/users/${id}`),
     resetPassword: (id, data) => api.put(`/users/${id}/reset-password`, data),
-    getStats: () => api.get('/users/stats')
+    getStats: () => api.get('/users/stats'),
+    getStaffList: () => api.get('/users/role/staff')
 }
 
 // Products API
@@ -71,9 +72,12 @@ export const productsAPI = {
 export const stockAPI = {
     getMovements: (params) => api.get('/stock/movements', { params }),
     getSummary: () => api.get('/stock/summary'),
+    getStockLevels: (params) => api.get('/stock/levels', { params }),
+    updateQuantity: (productId, data) => api.put(`/stock/update-quantity/${productId}`, data),
     stockIn: (data) => api.post('/stock/in', data),
     stockOut: (data) => api.post('/stock/out', data),
-    adjustment: (data) => api.post('/stock/adjustment', data)
+    adjustment: (data) => api.post('/stock/adjustment', data),
+    checkAlerts: () => api.post('/stock/check-alerts')
 }
 
 // Orders API
@@ -90,9 +94,9 @@ export const ordersAPI = {
 export const reportsAPI = {
     getDashboard: () => api.get('/reports/dashboard'),
     getSales: (params) => api.get('/reports/sales', { params }),
-    getProducts: () => api.get('/reports/products'),
-    getCustomers: () => api.get('/reports/customers'),
-    getAnalytics: () => api.get('/reports/analytics')
+    getProducts: (params) => api.get('/reports/products', { params }),
+    getCustomers: (params) => api.get('/reports/customers', { params }),
+    getAnalytics: (params) => api.get('/reports/analytics', { params })
 }
 
 // Quotations API

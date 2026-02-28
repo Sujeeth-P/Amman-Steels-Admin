@@ -61,8 +61,8 @@ const LoginView = () => {
             <div className="relative w-full max-w-md">
                 {/* Logo & Header */}
                 <div className="text-center mb-8">
-                    <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-2xl shadow-xl mb-4">
-                        <div className="w-16 h-16 bg-gradient-to-br from-primary-600 to-primary-800 rounded-xl flex items-center justify-center">
+                    <div className="inline-flex items-center justify-center w-20 h-20 shadow-xl mb-4">
+                        <div className="w-16 h-16 bg-gradient-to-br from-primary-600 to-primary-800 rounded-full flex items-center justify-center">
                             <span className="text-white font-bold text-2xl">SA</span>
                         </div>
                     </div>
@@ -166,7 +166,7 @@ const LoginView = () => {
                 </div>
 
                 {/* Demo Credentials */}
-                <div className="mt-6 bg-white/10 backdrop-blur rounded-xl p-4">
+                {/* <div className="mt-6 bg-white/10 backdrop-blur rounded-xl p-4">
                     <p className="text-sm text-white font-semibold mb-3 text-center">Demo Credentials</p>
                     <div className="space-y-2 text-xs">
                         <div className="flex justify-between items-center p-2 bg-white/10 rounded">
@@ -182,7 +182,7 @@ const LoginView = () => {
                             <span className="text-steel-300">staff@sriamman.com / Staff@123</span>
                         </div>
                     </div>
-                </div>
+                </div> */}
             </div>
         </div>
     )

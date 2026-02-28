@@ -76,7 +76,7 @@ const QuotationsView = () => {
 
     const loadStaff = async () => {
         try {
-            const res = await usersAPI.getAll({ role: 'staff,admin' })
+            const res = await usersAPI.getStaffList()
             setStaffList(res.data.data.users || [])
         } catch (err) {
             console.error('Failed to load staff:', err)
@@ -164,7 +164,7 @@ const QuotationsView = () => {
                     <p className="text-steel-500 text-xs">Converted</p>
                     <p className="text-xl font-bold text-green-600">{stats.converted}</p>
                 </div>
-              {/*  <div className="card p-4">
+                {/*  <div className="card p-4">
                     <p className="text-steel-500 text-xs">Today</p>
                     <p className="text-xl font-bold text-steel-900">{stats.today}</p>
                 </div>*/}

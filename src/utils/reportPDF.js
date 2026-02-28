@@ -122,10 +122,11 @@ const addSectionTitle = (doc, y, title) => {
 // ==========================================
 // SALES REPORT PDF
 // ==========================================
-export const generateSalesReportPDF = (salesData, productData, customerData = {}) => {
+export const generateSalesReportPDF = (salesData, productData, customerData = {}, dateRangeLabel = '', analytics = null) => {
     const doc = new jsPDF()
 
-    let y = addHeader(doc, 'Sales Report', 'Last 30 Days Overview')
+    const subtitle = dateRangeLabel && dateRangeLabel !== 'All Time' ? `Period: ${dateRangeLabel}` : 'All Time Overview'
+    let y = addHeader(doc, 'Sales Report', subtitle)
 
     // Summary Cards
     y = addSummaryCards(doc, y, [
@@ -347,6 +348,76 @@ export const generateSalesReportPDF = (salesData, productData, customerData = {}
         })
     }
 
+    // Stock Movement Details
+    if (analytics?.stockMovementDetails?.length) {
+        doc.addPage()
+        y = 20
+
+        y = addSectionTitle(doc, y, 'Stock Movement Details')
+
+        // Summary first
+        if (analytics.stockMovements?.length) {
+            autoTable(doc, {
+                startY: y,
+                head: [['Movement Type', 'Count', 'Total Quantity']],
+                body: analytics.stockMovements.map(m => [
+                    (m._id || '').replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()),
+                    m.count,
+                    `${m.totalQty} units`
+                ]),
+                headStyles: {
+                    fillColor: [30, 41, 59],
+                    textColor: [255, 255, 255],
+                    fontSize: 9,
+                    fontStyle: 'bold',
+                },
+                bodyStyles: { fontSize: 9, cellPadding: 4 },
+                columnStyles: { 1: { halign: 'center' }, 2: { halign: 'center' } },
+                alternateRowStyles: { fillColor: [248, 250, 252] },
+                margin: { left: 14, right: 14 },
+                styles: { lineColor: [226, 232, 240], lineWidth: 0.25 }
+            })
+            y = doc.lastAutoTable.finalY + 12
+        }
+
+        // Detailed breakdown
+        y = addSectionTitle(doc, y, 'Individual Stock Movements')
+
+        autoTable(doc, {
+            startY: y,
+            head: [['Product', 'Type', 'Qty', 'Stock Change', 'Supplier / Notes', 'Done By', 'Date']],
+            body: analytics.stockMovementDetails.map(m => [
+                m.product?.name || 'Unknown',
+                (m.type || '').replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()),
+                m.quantity,
+                `${m.previousStock} -> ${m.newStock}`,
+                [m.supplier?.name, m.supplier?.invoiceNo ? `Inv: ${m.supplier.invoiceNo}` : '', m.notes].filter(Boolean).join(' | ') || '-',
+                m.createdBy?.name || '-',
+                new Date(m.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+            ]),
+            headStyles: {
+                fillColor: [30, 41, 59],
+                textColor: [255, 255, 255],
+                fontSize: 8,
+                fontStyle: 'bold',
+                halign: 'left'
+            },
+            bodyStyles: { fontSize: 8, cellPadding: 3 },
+            columnStyles: {
+                0: { cellWidth: 35 },
+                1: { halign: 'center', cellWidth: 20 },
+                2: { halign: 'center', cellWidth: 12 },
+                3: { halign: 'center', cellWidth: 25 },
+                4: { cellWidth: 40 },
+                5: { cellWidth: 22 },
+                6: { halign: 'right', cellWidth: 28 }
+            },
+            alternateRowStyles: { fillColor: [248, 250, 252] },
+            margin: { left: 14, right: 14 },
+            styles: { lineColor: [226, 232, 240], lineWidth: 0.25, overflow: 'linebreak' }
+        })
+    }
+
     addFooter(doc)
     doc.save(`Sales_Report_${new Date().toISOString().split('T')[0]}.pdf`)
 }
@@ -459,7 +530,7 @@ export const generateFullReportPDF = (salesData, productData, analytics) => {
     if (analytics?.stockMovements?.length) {
         if (y > 220) { doc.addPage(); y = 20 }
 
-        y = addSectionTitle(doc, y, 'Stock Movement Summary (Last 30 Days)')
+        y = addSectionTitle(doc, y, 'Stock Movement Summary')
 
         autoTable(doc, {
             startY: y,
@@ -480,6 +551,49 @@ export const generateFullReportPDF = (salesData, productData, analytics) => {
             alternateRowStyles: { fillColor: [248, 250, 252] },
             margin: { left: 14, right: 14 },
             styles: { lineColor: [226, 232, 240], lineWidth: 0.25 }
+        })
+
+        y = doc.lastAutoTable.finalY + 12
+    }
+
+    // Detailed Stock Movements
+    if (analytics?.stockMovementDetails?.length) {
+        if (y > 180) { doc.addPage(); y = 20 }
+
+        y = addSectionTitle(doc, y, 'Detailed Stock Movements')
+
+        autoTable(doc, {
+            startY: y,
+            head: [['Product', 'Type', 'Qty', 'Stock Change', 'Supplier / Notes', 'Done By', 'Date']],
+            body: analytics.stockMovementDetails.map(m => [
+                m.product?.name || 'Unknown',
+                (m.type || '').replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()),
+                m.quantity,
+                `${m.previousStock} -> ${m.newStock}`,
+                [m.supplier?.name, m.supplier?.invoiceNo ? `Inv: ${m.supplier.invoiceNo}` : '', m.notes].filter(Boolean).join(' | ') || '-',
+                m.createdBy?.name || '-',
+                new Date(m.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+            ]),
+            headStyles: {
+                fillColor: [30, 41, 59],
+                textColor: [255, 255, 255],
+                fontSize: 8,
+                fontStyle: 'bold',
+                halign: 'left'
+            },
+            bodyStyles: { fontSize: 8, cellPadding: 3 },
+            columnStyles: {
+                0: { cellWidth: 35 },
+                1: { halign: 'center', cellWidth: 20 },
+                2: { halign: 'center', cellWidth: 12 },
+                3: { halign: 'center', cellWidth: 25 },
+                4: { cellWidth: 40 },
+                5: { cellWidth: 22 },
+                6: { halign: 'right', cellWidth: 28 }
+            },
+            alternateRowStyles: { fillColor: [248, 250, 252] },
+            margin: { left: 14, right: 14 },
+            styles: { lineColor: [226, 232, 240], lineWidth: 0.25, overflow: 'linebreak' }
         })
 
         y = doc.lastAutoTable.finalY + 12
