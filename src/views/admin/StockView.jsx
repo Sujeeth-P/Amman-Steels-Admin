@@ -1,8 +1,61 @@
 import { useState, useEffect } from 'react'
 import { stockAPI, productsAPI } from '../../services/api'
-import { FiPackage, FiPlus, FiMinus, FiSearch, FiCheckCircle, FiAlertTriangle, FiAlertCircle, FiXCircle, FiEdit2, FiLoader, FiSave, FiX, FiBarChart2, FiList, FiBell, FiArrowDownCircle, FiArrowUpCircle, FiRefreshCw, FiBox } from 'react-icons/fi'
+import { FiPackage, FiPlus, FiMinus, FiSearch, FiCheckCircle, FiAlertTriangle, FiAlertCircle, FiXCircle, FiEdit2, FiLoader, FiSave, FiX, FiBarChart2, FiList, FiBell, FiArrowDownCircle, FiArrowUpCircle, FiRefreshCw, FiBox, FiLock, FiUnlock } from 'react-icons/fi'
+import useAuthStore from '../../stores/authStore'
+
+// Demo Tamil Nadu suppliers mapped by product category
+const TN_SUPPLIERS = {
+    steel: [
+        { name: 'SAIL - Salem Steel Plant', location: 'Salem' },
+        { name: 'JSW Steel Coated Products Ltd', location: 'Krishnagiri' },
+        { name: 'Tata Steel Downstream Products Ltd', location: 'Chennai' },
+        { name: 'Surya Roshni Steel Pipes', location: 'Hosur' },
+        { name: 'Kamachi Industries Ltd', location: 'Madurai' },
+        { name: 'Shree TMT Bars - Sri Balaji Steel', location: 'Coimbatore' },
+        { name: 'Agni Steels Pvt Ltd', location: 'Erode' },
+        { name: 'Aarti Steels Ltd', location: 'Tiruchirappalli' },
+    ],
+    cement: [
+        { name: 'Dalmia Cement (Bharat) Ltd', location: 'Dalmiapuram, Trichy' },
+        { name: 'India Cements Ltd', location: 'Chennai' },
+        { name: 'Chettinad Cement Corporation', location: 'Karur' },
+        { name: 'Ramco Cements Ltd', location: 'Madras / Virudhunagar' },
+        { name: 'Zuari Cement (Heidelberg)', location: 'Thoothukudi' },
+        { name: 'Ultratech Cement', location: 'Ariyalur' },
+        { name: 'Coromandel Cements', location: 'Cuddalore' },
+    ],
+    electronics: [
+        { name: 'Havells India Ltd', location: 'Chennai' },
+        { name: 'Crompton Greaves Consumer', location: 'Chennai' },
+        { name: 'Bajaj Electricals Ltd', location: 'Chennai' },
+        { name: 'Anchor by Panasonic', location: 'Coimbatore' },
+        { name: 'Finolex Cables Ltd', location: 'Chennai' },
+        { name: 'Polycab India Ltd', location: 'Hosur' },
+        { name: 'Legrand India Pvt Ltd', location: 'Chennai' },
+        { name: 'Schneider Electric India', location: 'Chennai' },
+    ],
+    paints: [
+        { name: 'Asian Paints Ltd', location: 'Kanchipuram' },
+        { name: 'Berger Paints India Ltd', location: 'Puducherry' },
+        { name: 'Nerolac Paints (Kansai)', location: 'Hosur' },
+        { name: 'Indigo Paints Ltd', location: 'Chennai' },
+        { name: 'Dulux (AkzoNobel India)', location: 'Chennai' },
+        { name: 'Nippon Paint India Pvt Ltd', location: 'Chennai' },
+    ],
+    pipes: [
+        { name: 'Supreme Industries Ltd', location: 'Madurai' },
+        { name: 'Astral Pipes Ltd', location: 'Hosur' },
+        { name: 'Finolex Industries Ltd', location: 'Chennai' },
+        { name: 'Prince Pipes and Fittings Ltd', location: 'Haridwar / Chennai' },
+        { name: 'Ashirvad Pipes (Aliaxis)', location: 'Bangalore / Chennai Depot' },
+        { name: 'Jain Irrigation (Pipes Division)', location: 'Udumalpet' },
+        { name: 'Nandi Pipes Pvt Ltd', location: 'Coimbatore' },
+    ]
+}
 
 const StockView = () => {
+    const { isSuperAdmin, isAdmin } = useAuthStore()
+    const canEditPrice = () => isSuperAdmin() || isAdmin()
     const [loading, setLoading] = useState(true)
     const [movements, setMovements] = useState([])
     const [products, setProducts] = useState([])
@@ -29,6 +82,20 @@ const StockView = () => {
         notes: '',
         type: 'adjustment'
     })
+
+    // Get the category of the currently selected product
+    const getSelectedProductCategory = () => {
+        if (!form.productId) return null
+        const selected = products.find(p => p.id === form.productId || p._id === form.productId)
+        return selected?.category?.toLowerCase() || null
+    }
+
+    // Get suppliers for the selected product's category
+    const getAvailableSuppliers = () => {
+        const category = getSelectedProductCategory()
+        if (!category) return []
+        return TN_SUPPLIERS[category] || []
+    }
 
     const loadData = async () => {
         setLoading(true)
@@ -708,6 +775,8 @@ const StockView = () => {
                                         <th className="table-header">Product</th>
                                         <th className="table-header">Type</th>
                                         <th className="table-header">Qty</th>
+                                        <th className="table-header">Unit Price (₹)</th>
+                                        <th className="table-header">Total Value (₹)</th>
                                         <th className="table-header">Previous</th>
                                         <th className="table-header">New</th>
                                         <th className="table-header">By</th>
@@ -725,6 +794,12 @@ const StockView = () => {
                                                 </span>
                                             </td>
                                             <td className="table-cell" style={{ fontWeight: 700 }}>{mov.quantity}</td>
+                                            <td className="table-cell" style={{ fontWeight: 600, color: '#1e293b' }}>
+                                                {mov.unitPrice ? `₹${Number(mov.unitPrice).toLocaleString('en-IN')}` : '-'}
+                                            </td>
+                                            <td className="table-cell" style={{ fontWeight: 700, color: '#0f766e' }}>
+                                                {mov.totalValue ? `₹${Number(mov.totalValue).toLocaleString('en-IN')}` : '-'}
+                                            </td>
                                             <td className="table-cell text-steel-500">{mov.previousStock}</td>
                                             <td className="table-cell" style={{
                                                 fontWeight: 600,
@@ -739,7 +814,7 @@ const StockView = () => {
                                     ))}
                                     {!movements.length && (
                                         <tr>
-                                            <td colSpan="8" className="table-cell text-center text-steel-500">No movements recorded</td>
+                                            <td colSpan="10" className="table-cell text-center text-steel-500">No movements recorded</td>
                                         </tr>
                                     )}
                                 </tbody>
@@ -763,7 +838,16 @@ const StockView = () => {
                                 <label className="block text-sm font-medium text-steel-700 mb-1">Product</label>
                                 <select
                                     value={form.productId}
-                                    onChange={(e) => setForm({ ...form, productId: e.target.value })}
+                                    onChange={(e) => {
+                                        const selectedId = e.target.value
+                                        const selectedProduct = products.find(p => p.id === selectedId || p._id === selectedId)
+                                        setForm({
+                                            ...form,
+                                            productId: selectedId,
+                                            supplierName: '',
+                                            unitPrice: selectedProduct?.price || ''
+                                        })
+                                    }}
                                     className="input-field"
                                     required
                                 >
@@ -789,24 +873,56 @@ const StockView = () => {
                             {modalType === 'in' && (
                                 <>
                                     <div>
-                                        <label className="block text-sm font-medium text-steel-700 mb-1">Unit Price (₹)</label>
-                                        <input
-                                            value={form.unitPrice}
-                                            onChange={(e) => setForm({ ...form, unitPrice: e.target.value })}
-                                            type="number"
-                                            min="0"
-                                            className="input-field"
-                                        />
+                                        <label className="block text-sm font-medium text-steel-700 mb-1">
+                                            <span className="flex items-center gap-1.5">
+                                                Unit Price (₹)
+                                                {!canEditPrice() && (
+                                                    <span className="inline-flex items-center gap-1 text-xs font-normal text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
+                                                        <FiLock size={10} /> Admin / Super Admin only
+                                                    </span>
+                                                )}
+                                                {canEditPrice() && (
+                                                    <span className="inline-flex items-center gap-1 text-xs font-normal text-green-600 bg-green-50 px-2 py-0.5 rounded-full">
+                                                        <FiUnlock size={10} /> Editable
+                                                    </span>
+                                                )}
+                                            </span>
+                                        </label>
+                                        <div className="relative">
+                                            <input
+                                                value={form.unitPrice}
+                                                onChange={(e) => canEditPrice() && setForm({ ...form, unitPrice: e.target.value })}
+                                                type="number"
+                                                min="0"
+                                                className="input-field"
+                                                readOnly={!canEditPrice()}
+                                                style={{
+                                                    backgroundColor: !canEditPrice() ? '#f1f5f9' : undefined,
+                                                    cursor: !canEditPrice() ? 'not-allowed' : undefined
+                                                }}
+                                            />
+                                        </div>
+                                        {!canEditPrice() && form.unitPrice && (
+                                            <p className="text-xs text-steel-500 mt-1">Default product price applied. Contact Admin or Super Admin to modify.</p>
+                                        )}
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
                                             <label className="block text-sm font-medium text-steel-700 mb-1">Supplier</label>
-                                            <input
+                                            <select
                                                 value={form.supplierName}
                                                 onChange={(e) => setForm({ ...form, supplierName: e.target.value })}
-                                                type="text"
                                                 className="input-field"
-                                            />
+                                            >
+                                                <option value="">
+                                                    {form.productId ? 'Select supplier...' : '-- Select a product first --'}
+                                                </option>
+                                                {getAvailableSuppliers().map((s, idx) => (
+                                                    <option key={idx} value={s.name}>
+                                                        {s.name} — {s.location}
+                                                    </option>
+                                                ))}
+                                            </select>
                                         </div>
                                         <div>
                                             <label className="block text-sm font-medium text-steel-700 mb-1">Invoice No</label>

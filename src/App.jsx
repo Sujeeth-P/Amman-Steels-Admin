@@ -129,9 +129,9 @@ function App() {
           <Route path="orders" element={<OrdersView />} />
         </Route>
 
-        {/* Billing - Staff only */}
+        {/* Billing - accessible by all roles */}
         <Route path="/staff/billing" element={
-          <ProtectedRoute allowedRoles={['staff']}>
+          <ProtectedRoute allowedRoles={['super_admin', 'admin', 'staff']}>
             <AdminLayout />
           </ProtectedRoute>
         }>

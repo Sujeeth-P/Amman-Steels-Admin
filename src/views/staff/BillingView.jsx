@@ -1,8 +1,14 @@
 import { useState, useEffect, useMemo } from 'react'
-import { productsAPI, ordersAPI } from '../../services/api'
-import { FiSearch, FiUser, FiPhone, FiMapPin, FiShoppingCart, FiX, FiPlus, FiMinus, FiAlertCircle, FiCheckCircle, FiAlertTriangle, FiLoader, FiCreditCard } from 'react-icons/fi'
+import { useLocation } from 'react-router-dom'
+import { productsAPI, ordersAPI, quotationsAPI } from '../../services/api'
+import { FiSearch, FiUser, FiPhone, FiMapPin, FiShoppingCart, FiX, FiPlus, FiMinus, FiAlertCircle, FiCheckCircle, FiAlertTriangle, FiLoader, FiCreditCard, FiFileText } from 'react-icons/fi'
 
 const BillingView = () => {
+    const location = useLocation()
+    const quotationData = location.state?.quotationData || null
+    const fromQuotation = location.state?.fromQuotation || false
+    const enquiryId = location.state?.enquiryId || null
+
     const [products, setProducts] = useState([])
     const [search, setSearch] = useState('')
     const [loading, setLoading] = useState(true)
@@ -33,6 +39,32 @@ const BillingView = () => {
     useEffect(() => {
         loadProducts()
     }, [])
+
+    // Pre-fill from quotation data when redirected from Quotations page
+    useEffect(() => {
+        if (fromQuotation && quotationData) {
+            // Pre-fill customer info
+            setCustomer({
+                name: quotationData.customer?.name || '',
+                phone: quotationData.customer?.phone || '',
+                email: quotationData.customer?.email || '',
+                address: quotationData.customer?.address || '',
+                gstin: quotationData.customer?.gstin || ''
+            })
+
+            // Pre-fill cart with quotation items
+            if (quotationData.items?.length > 0) {
+                const cartItems = quotationData.items.map(item => ({
+                    productId: item.productId || item.product || '',
+                    name: item.productName || item.name || '',
+                    price: item.unitPrice || item.price || 0,
+                    unit: item.unit || 'piece',
+                    quantity: item.quantity || 1
+                }))
+                setCart(cartItems)
+            }
+        }
+    }, [fromQuotation, quotationData])
 
     // Validation rules
     const validateField = (field, value) => {
@@ -173,6 +205,16 @@ const BillingView = () => {
                 amountPaid: paidNum
             })
             setSuccess(true)
+
+            // If this order was created from a quotation, mark it as ordered
+            if (fromQuotation && enquiryId) {
+                try {
+                    await quotationsAPI.update(enquiryId, { status: 'converted' })
+                } catch (updateErr) {
+                    console.error('Failed to update quotation status:', updateErr)
+                }
+            }
+
             // Reset form
             setCart([])
             setCustomer({ name: '', phone: '', email: '', address: '', gstin: '' })
@@ -202,6 +244,21 @@ const BillingView = () => {
     return (
         <div className="animate-fadeIn">
             <h1 className="text-2xl font-bold text-steel-900 mb-6">Billing</h1>
+
+            {/* Quotation conversion banner */}
+            {fromQuotation && quotationData && !success && (
+                <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-xl flex items-center gap-3">
+                    <FiFileText className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                    <div>
+                        <p className="font-semibold text-blue-900">
+                            Converting Quotation: {quotationData.enquiryNumber}
+                        </p>
+                        <p className="text-sm text-blue-700">
+                            Customer: {quotationData.customer?.name} • Items and details have been pre-filled from the quotation. Review, adjust if needed, then create the order.
+                        </p>
+                    </div>
+                </div>
+            )}
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Products */}

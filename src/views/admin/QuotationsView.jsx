@@ -11,17 +11,17 @@ const QuotationsView = () => {
     const [loading, setLoading] = useState(true)
     const [enquiries, setEnquiries] = useState([])
     const [pagination, setPagination] = useState({ page: 1, limit: 20, total: 0, pages: 0 })
-    const [stats, setStats] = useState({ total: 0, pending: 0, contacted: 0, quoted: 0, converted: 0, today: 0, highPriority: 0 })
+    const [stats, setStats] = useState({ total: 0, pending: 0, contacted: 0, converted: 0, today: 0, highPriority: 0 })
     const [filters, setFilters] = useState({ status: 'all', priority: 'all', search: '' })
     const [selectedEnquiry, setSelectedEnquiry] = useState(null)
     const [showModal, setShowModal] = useState(false)
     const [updating, setUpdating] = useState(false)
     const [staffList, setStaffList] = useState([])
+    const [originalStatus, setOriginalStatus] = useState(null)
 
     const statusColors = {
         pending: 'bg-yellow-100 text-yellow-800',
         contacted: 'bg-blue-100 text-blue-800',
-        quoted: 'bg-purple-100 text-purple-800',
         converted: 'bg-green-100 text-green-800',
         closed: 'bg-gray-100 text-gray-800'
     }
@@ -87,6 +87,7 @@ const QuotationsView = () => {
         try {
             const res = await quotationsAPI.getById(enquiry._id)
             setSelectedEnquiry(res.data.data)
+            setOriginalStatus(res.data.data.status)
             setShowModal(true)
         } catch (err) {
             console.error('Failed to load quotation details:', err)
@@ -143,7 +144,7 @@ const QuotationsView = () => {
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
                 <div className="card p-4">
                     <p className="text-steel-500 text-xs">Total</p>
                     <p className="text-xl font-bold text-steel-900">{stats.total}</p>
@@ -156,21 +157,17 @@ const QuotationsView = () => {
                     <p className="text-steel-500 text-xs">Contacted</p>
                     <p className="text-xl font-bold text-blue-600">{stats.contacted}</p>
                 </div>
-                <div className="card p-4 border-l-4 border-purple-400">
-                    <p className="text-steel-500 text-xs">Quoted</p>
-                    <p className="text-xl font-bold text-purple-600">{stats.quoted}</p>
-                </div>
                 <div className="card p-4 border-l-4 border-green-400">
-                    <p className="text-steel-500 text-xs">Converted</p>
+                    <p className="text-steel-500 text-xs">Ordered</p>
                     <p className="text-xl font-bold text-green-600">{stats.converted}</p>
                 </div>
-                {/*  <div className="card p-4">
-                    <p className="text-steel-500 text-xs">Today</p>
-                    <p className="text-xl font-bold text-steel-900">{stats.today}</p>
-                </div>*/}
                 <div className="card p-4 border-l-4 border-red-400">
                     <p className="text-steel-500 text-xs">High Priority</p>
                     <p className="text-xl font-bold text-red-600">{stats.highPriority}</p>
+                </div>
+                <div className="card p-4 border-l-4 border-gray-400">
+                    <p className="text-steel-500 text-xs">Closed</p>
+                    <p className="text-xl font-bold text-gray-600">{stats.closed || 0}</p>
                 </div>
             </div>
 
@@ -192,8 +189,7 @@ const QuotationsView = () => {
                         <option value="all">All Status</option>
                         <option value="pending">Pending</option>
                         <option value="contacted">Contacted</option>
-                        <option value="quoted">Quoted</option>
-                        <option value="converted">Converted</option>
+                        <option value="converted">Ordered</option>
                         <option value="closed">Closed</option>
                     </select>
                     <select
@@ -262,26 +258,45 @@ const QuotationsView = () => {
                                             </td>
                                             <td className="table-cell">
                                                 <span className={`badge ${statusColors[enquiry.status]}`}>
-                                                    {enquiry.status}
+                                                    {enquiry.status === 'converted' ? 'ordered' : enquiry.status}
                                                 </span>
                                             </td>
                                             <td className="table-cell text-steel-500 text-sm">
                                                 {formatDate(enquiry.createdAt)}
                                             </td>
                                             <td className="table-cell">
-                                                <div className="flex gap-2">
+                                                <div className="flex flex-col gap-2 items-stretch min-w-[140px]">
                                                     <button
                                                         onClick={() => handleViewEnquiry(enquiry)}
-                                                        className="btn btn-sm btn-outline"
+                                                        className="btn btn-outline py-2 px-4 text-sm font-semibold rounded-lg whitespace-nowrap text-center"
                                                     >
                                                         View
                                                     </button>
-                                                    {enquiry.status === 'pending' && (
+                                                    {(enquiry.status === 'pending' || enquiry.status === 'contacted') && (
                                                         <button
-                                                            onClick={() => handleQuickStatusChange(enquiry._id, 'contacted')}
-                                                            className="btn btn-sm btn-primary"
+                                                            onClick={async () => {
+                                                                try {
+                                                                    const res = await quotationsAPI.getById(enquiry._id)
+                                                                    navigate('/staff/billing', {
+                                                                        state: {
+                                                                            fromQuotation: true,
+                                                                            quotationData: res.data.data,
+                                                                            enquiryId: enquiry._id
+                                                                        }
+                                                                    })
+                                                                } catch (err) {
+                                                                    navigate('/staff/billing', {
+                                                                        state: {
+                                                                            fromQuotation: true,
+                                                                            quotationData: enquiry,
+                                                                            enquiryId: enquiry._id
+                                                                        }
+                                                                    })
+                                                                }
+                                                            }}
+                                                            className="btn bg-green-600 hover:bg-green-700 text-white py-2 px-2 text-sm font-semibold rounded-lg whitespace-nowrap text-center"
                                                         >
-                                                            Mark Contacted
+                                                            Confirm Order
                                                         </button>
                                                     )}
                                                 </div>
@@ -417,8 +432,7 @@ const QuotationsView = () => {
                                     >
                                         <option value="pending">Pending</option>
                                         <option value="contacted">Contacted</option>
-                                        <option value="quoted">Quoted</option>
-                                        <option value="converted">Converted</option>
+                                        <option value="converted">Ordered</option>
                                         <option value="closed">Closed</option>
                                     </select>
                                 </div>
@@ -458,40 +472,69 @@ const QuotationsView = () => {
                                 ></textarea>
                             </div>
 
-                            <div className="flex gap-3 pt-4 border-t border-steel-100">
-                                <button
-                                    onClick={() => handleUpdateEnquiry({
-                                        status: selectedEnquiry.status,
-                                        priority: selectedEnquiry.priority,
-                                        quotedAmount: selectedEnquiry.quotedAmount,
-                                        adminNotes: selectedEnquiry.adminNotes
-                                    })}
-                                    disabled={updating}
-                                    className="btn btn-primary flex-1"
-                                >
-                                    {updating ? 'Saving...' : 'Save Changes'}
-                                </button>
+                            {/* Closing Remarks - visible when status is closed */}
+                            {selectedEnquiry.status === 'closed' && (
+                                <div>
+                                    <label className="block text-sm font-medium text-red-700 mb-2">
+                                        Closing Remarks <span className="text-xs text-steel-500">(visible to customer)</span>
+                                    </label>
+                                    <textarea
+                                        value={selectedEnquiry.closingRemarks || ''}
+                                        onChange={(e) => setSelectedEnquiry({ ...selectedEnquiry, closingRemarks: e.target.value })}
+                                        className="input w-full border-red-200 focus:border-red-400"
+                                        rows="3"
+                                        placeholder="Provide a reason for closing this enquiry (e.g., Out of stock, Customer cancelled, etc.)"
+                                    ></textarea>
+                                </div>
+                            )}
 
-                                {/* Staff: Process Order button - converts quotation to order */}
-                                {selectedEnquiry.status === 'quoted' && (
+                            <div className="flex gap-3 pt-4 border-t border-steel-100">
+                                {/* Already ordered — show confirmed badge */}
+                                {originalStatus === 'converted' ? (
+                                    <button
+                                        disabled
+                                        className="btn py-2 px-3 flex-1 text-center text-base font-semibold rounded-xl bg-gray-100 text-green-700 border-2 border-green-200 cursor-not-allowed"
+                                    >
+                                        ✅ Order Confirmed
+                                    </button>
+                                ) : selectedEnquiry.status === 'converted' ? (
+                                    /* User just changed dropdown to Ordered — redirect to billing */
                                     <button
                                         onClick={() => {
-                                            // Update status to converted and navigate to billing
-                                            handleUpdateEnquiry({ status: 'converted' })
+                                            setShowModal(false)
                                             navigate('/staff/billing', {
                                                 state: {
                                                     fromQuotation: true,
-                                                    quotationData: selectedEnquiry
+                                                    quotationData: selectedEnquiry,
+                                                    enquiryId: selectedEnquiry._id
                                                 }
                                             })
                                         }}
-                                        className="btn bg-green-600 hover:bg-green-700 text-white"
+                                        className="btn py-2 px-3 flex-1 text-center text-base font-semibold rounded-xl bg-green-600 hover:bg-green-700 text-white"
                                     >
-                                        Process Order
+                                        📋 Go to Billing
+                                    </button>
+                                ) : (
+                                    /* Normal save changes */
+                                    <button
+                                        onClick={async () => {
+                                            const updates = {
+                                                status: selectedEnquiry.status,
+                                                priority: selectedEnquiry.priority,
+                                                quotedAmount: selectedEnquiry.quotedAmount,
+                                                adminNotes: selectedEnquiry.adminNotes,
+                                                closingRemarks: selectedEnquiry.closingRemarks
+                                            }
+                                            await handleUpdateEnquiry(updates)
+                                        }}
+                                        disabled={updating}
+                                        className="btn py-2 px-3 flex-1 text-center text-base font-semibold rounded-xl btn-primary"
+                                    >
+                                        {updating ? 'Saving...' : 'Save Changes'}
                                     </button>
                                 )}
 
-                                <button onClick={() => setShowModal(false)} className="btn btn-outline">
+                                <button onClick={() => setShowModal(false)} className="btn btn-outline py-3 px-6 text-base font-semibold rounded-xl border-2">
                                     Cancel
                                 </button>
                             </div>
