@@ -187,7 +187,7 @@ const OrdersView = () => {
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                                     </svg>
                                                 </button>
-                                                {!order.invoiceNumber && order.status !== 'cancelled' && (
+                                                {!order.invoiceNumber && order.status !== 'cancelled' && order.paymentStatus === 'paid' && (
                                                     <button
                                                         onClick={() => generateInvoice(order)}
                                                         className="p-1.5 text-steel-600 hover:text-green-600 hover:bg-green-50 rounded"
@@ -198,7 +198,7 @@ const OrdersView = () => {
                                                         </svg>
                                                     </button>
                                                 )}
-                                                {order.invoiceNumber && (
+                                                {order.invoiceNumber && order.paymentStatus === 'paid' && (
                                                     <button
                                                         onClick={() => printInvoice(order)}
                                                         className="p-1.5 text-steel-600 hover:text-blue-600 hover:bg-blue-50 rounded"
@@ -264,8 +264,8 @@ const OrdersView = () => {
                                 </svg>
                             </button>
                         </div>
-                        {/* Print Invoice Button in Modal */}
-                        {selectedOrder.invoiceNumber && (
+                        {/* Print Invoice Button in Modal — only for fully paid orders */}
+                        {selectedOrder.invoiceNumber && selectedOrder.paymentStatus === 'paid' && (
                             <div className="px-6 py-3 bg-green-50 border-b border-green-100 flex items-center justify-between">
                                 <span className="text-sm text-green-700">✅ Invoice #{selectedOrder.invoiceNumber} generated</span>
                                 <button
@@ -279,7 +279,7 @@ const OrdersView = () => {
                                 </button>
                             </div>
                         )}
-                        {!selectedOrder.invoiceNumber && selectedOrder.status !== 'cancelled' && (
+                        {!selectedOrder.invoiceNumber && selectedOrder.status !== 'cancelled' && selectedOrder.paymentStatus === 'paid' && (
                             <div className="px-6 py-3 bg-amber-50 border-b border-amber-100 flex items-center justify-between">
                                 <span className="text-sm text-amber-700">⚠️ Invoice not yet generated</span>
                                 <button
@@ -291,6 +291,14 @@ const OrdersView = () => {
                                     </svg>
                                     Generate Invoice
                                 </button>
+                            </div>
+                        )}
+                        {selectedOrder.status !== 'cancelled' && selectedOrder.paymentStatus !== 'paid' && (
+                            <div className="px-6 py-3 bg-red-50 border-b border-red-100 flex items-center gap-2">
+                                <svg className="w-4 h-4 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                                </svg>
+                                <span className="text-sm text-red-700">Invoice can only be generated after full payment is received. Current status: <strong className="capitalize">{selectedOrder.paymentStatus}</strong></span>
                             </div>
                         )}
                         <div className="p-6 space-y-6">
